@@ -1,16 +1,18 @@
 function main() {
-
+  // much lighter than other version, as it creates recurring events instead of multiple single ones,
+  // but it doesn't add instance-specific notes when modified
 
   // Open the event calendar
-  var spreadsheet = SpreadsheetApp.getActiveSheet();
+  var spreadsheet = SpreadsheetApp.getActiveSheet(); // WARNING: when debugging and running from here make sure to select the first sheet in google sheets
   var calendarId = spreadsheet.getRange("Sheet2!A5").getValue();
   var eventCal = CalendarApp.getCalendarById(calendarId);
 
-  // Added: get active row (trigger starts the script on update of a cell)
-  var currRow = spreadsheet.getActiveCell().getRow();
-  var currCol = spreadsheet.getActiveCell().getColumn();
-  //if (currRow != "2" || currCol !="L") return; // only run script if cell L2 is modified
-  
+  var activationCell = SpreadsheetApp.getActive().getRange('L2');
+  if (!activationCell.isChecked()) { // only run script if activation cell L2 is modified
+    Logger.log("Not running repeated lectures update because activation cell is not checked");
+    return;
+  } 
+  activationCell.setValue('FALSE'); // toggle activation cell back to false
 
   // Pull info from sheet up to row 274
 
@@ -40,7 +42,7 @@ function main() {
     });
 
     var weeklyRecurrence = CalendarApp.newRecurrence();
-    weeklyRecurrence.addDailyRule().interval(1).until(new Date("2023-06-02T19:00:00"));
+    weeklyRecurrence.addWeeklyRule().interval(1).until(new Date("2023-06-02T19:00:00"));
     
     var event = eventCal.createEventSeries(lectureName, startTime, endTime, weeklyRecurrence);
   
@@ -48,13 +50,4 @@ function main() {
     event.setLocation(lectureRoom);
     Logger.log(event.getTitle());
   }
-}
-
-function getShortRangeFromRowAndColumns(row, column1, column2) {
-  var startRow = Math.max(2, row);
-  var endRow = row + 13;
-
-  var rangeString = column1 + startRow + ":" + column2 + endRow;
-  Logger.log(rangeString);
-  return rangeString;
 }
