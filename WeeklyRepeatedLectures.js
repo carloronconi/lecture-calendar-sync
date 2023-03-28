@@ -37,7 +37,8 @@ function main() {
     // Delete events on that datetime to avoid duplicates
     eventCal.getEvents(startTime, endTime).forEach(e => {
       if(e.getTitle().localeCompare(lectureName) == 0){
-        e.deleteEvent();
+        e.getEventSeries().deleteEventSeries();
+        Logger.log("Deleting event series: " + e.getTitle());
       }
     });
 
